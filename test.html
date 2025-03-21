@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Turf LC Fleet Management</title>
+    <link rel="icon" href="fleetLogo.png" type="image/png">
+    <link rel="stylesheet" href="test.css">
+    <script src="https://apis.google.com/js/api.js"></script>
+</head>
+
+<body>
+    <header>
+        <div id="logoContainer">
+            <img src="logo-business-card-style.png" alt="Turf LC Logo" id="companyLogo">
+        </div>
+        <h1>Turf LC Fleet Management</h1>
+    </header>
+
+    <!-- Search & Sort Container -->
+    <div class="filter-container">
+        <input type="text" id="searchBar" placeholder="Search for a truck..." onkeyup="filterTrucks()">
+        <select id="sortBar" onchange="filterTrucks()">
+            <option value="all">Show All</option>
+            <option value="in-operation">In Operation</option>
+            <option value="out-of-service">Out of Service</option>
+        </select>
+    </div>
+
+    <div id="truckContainer">
+        <p id="loadingMessage">Loading fleet data...</p>
+    </div>
+
+    <script>
+        const API_KEY = "AIzaSyDVwNNqgEUsxVQtW1vOIoOBhDJ57cVzM6o";
+        const SHEET_ID = "1uKoi8fGurno_MFjUTghQtr18QThUIhVQMycoAuXSAJE";
+        const RANGE = "Sheet1!A1:Z";
+
+        async function loadTrucks() {
+            try {
+                document.getElementById("loadingMessage").innerText = "Loading fleet data...";
+
+                const response = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${RANGE}?key=${API_KEY}`);
+                const data = await response.json();
+
+                const truckContainer = document.getElementById("truckContainer");
+                truckContainer.innerHTML = "";
+
+                if (!data.values || data.values.length < 2) {
+                    truckContainer.innerHTML = "<p>No fleet data available.</p>";
+                    return;
+                }
+
+                for (let i = 1; i < data.values.length; i++) {
+                    const row = data.values[i];
+                    if (row.length < 15) continue; // Ensure all required columns exist
+
+                    const [year, make, type, model, truckNum, color, mileage, engine, fuelType, vin, titleNum, plate, regExp, insExp, inspExp, notes] = row;
+
+                    // ✅ Retrieve stored status from sessionStorage
+                    let storedStatus = sessionStorage.getItem(`status_${vin}`) || "In Operation";
+
+                    // ✅ Retrieve additional saved data from localStorage
+                    let logData = JSON.parse(localStorage.getItem(`truck_${vin}`)) || {};
+                    let maintenanceCount = logData["maintenanceList"]?.length || 0;
+                    let repairsCount = logData["repairsList"]?.length || 0;
+                    let notesCount = logData["notesList"]?.length || 0;
+
+                    const truckCard = document.createElement("div");
+                    truckCard.classList.add("truck-card");
+                    truckCard.setAttribute("data-name", `${year} ${make} ${model}`);
+                    truckCard.setAttribute("data-status", storedStatus === "In Operation" ? "in-operation" : "out-of-service");
+                    truckCard.setAttribute("data-vin", vin); // Assign VIN for status updates
+
+                    truckCard.innerHTML = `
+                <h2>${year} ${make} ${model}</h2>
+                <p><strong>Mileage:</strong> ${mileage} miles</p>
+                <p><strong>Plate:</strong> ${plate}</p>
+                <p><strong>Logs:</strong> ${maintenanceCount} Maintenance, ${repairsCount} Repairs, ${notesCount} Notes</p>
+                <button class="status-btn ${storedStatus === "In Operation" ? "in-operation" : "out-of-service"}"
+                    onclick="toggleStatus('${vin}', this)">
+                    ${storedStatus}
+                </button>
+                <button class="view-log-btn" onclick="viewLog('${vin}')">View Log</button>
+            `;
+
+                    truckContainer.appendChild(truckCard);
+                }
+            } catch (error) {
+                console.error("Error fetching fleet data:", error);
+                document.getElementById("truckContainer").innerHTML = "<p>Error loading fleet data.</p>";
+            }
+        }
+
+        // ✅ Toggle Status Locally & Sync with `sessionStorage`
+        function toggleStatus(vin, button) {
+            let currentStatus = sessionStorage.getItem(`status_${vin}`) || "In Operation";
+            let newStatus = (currentStatus === "In Operation") ? "Out of Service" : "In Operation";
+
+            sessionStorage.setItem(`status_${vin}`, newStatus); // Update storage
+            button.textContent = newStatus;
+            button.className = `status-btn ${newStatus === "In Operation" ? "in-operation" : "out-of-service"}`;
+
+            // ✅ Update `data-status` attribute for filtering
+            const truckCard = button.closest(".truck-card");
+            if (truckCard) {
+                truckCard.setAttribute("data-status", newStatus);
+            }
+        }
+
+        function viewLog(vin) {
+            window.location.href = `test-logs.html?vin=${vin}`;
+        }
+
+        function filterTrucks() {
+            let input = document.getElementById("searchBar").value.toLowerCase();
+            let selectedStatus = document.getElementById("sortBar").value.toLowerCase();
+            let truckCards = document.querySelectorAll(".truck-card");
+
+            truckCards.forEach(card => {
+                let truckName = card.getAttribute("data-name").toLowerCase();
+                let status = card.getAttribute("data-status").toLowerCase();
+
+                // ✅ Normalize `status` values to ensure correct filtering
+                if (status === "in operation") status = "in-operation";
+                if (status === "out of service") status = "out-of-service";
+
+                let matchesSearch = truckName.includes(input);
+                let matchesSort = (selectedStatus === "all") || (status === selectedStatus);
+
+                card.style.display = matchesSearch && matchesSort ? "block" : "none";
+            });
+        }
+        // ✅ Ensure Status Updates Instantly from Truck Log Page
+        function syncStatusUpdates() {
+            let truckCards = document.querySelectorAll(".truck-card");
+
+            truckCards.forEach(card => {
+                let vin = card.getAttribute("data-vin");
+                let storedStatus = sessionStorage.getItem(`status_${vin}`);
+
+                if (storedStatus) {
+                    let statusBtn = card.querySelector(".status-btn");
+                    if (statusBtn) {
+                        statusBtn.textContent = storedStatus;
+                        let normalizedStatus = storedStatus === "In Operation" ? "in-operation" : "out-of-service";
+                        statusBtn.className = `status-btn ${normalizedStatus}`;
+                        card.setAttribute("data-status", normalizedStatus);
+                    }
+                }
+            });
+
+            // ✅ Ensure sorting works after status updates
+            filterTrucks();
+        }
+
+        // ✅ Sync changes from test-logs.html when user navigates back
+        window.addEventListener("storage", (event) => {
+            if (event.key && event.key.startsWith("truck_")) {
+                loadTrucks();        // Re-render the truck cards with updated info
+                syncStatusUpdates(); // Ensure status classes and filters are also correct
+            }
+        });
+
+        window.onload = function () {
+            loadTrucks();
+            syncStatusUpdates(); // ✅ Ensure any status updates are reflected
+        };
+    </script>
+</body>
+
+</html>

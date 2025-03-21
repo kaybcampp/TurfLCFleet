@@ -1,0 +1,433 @@
+/* General Styles - Dark Mode */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #121212;
+    color: #e0e0e0;
+    text-align: center;
+    margin: 0;
+    padding: 20px;
+}
+
+/* Header Styles */
+header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+/* Company Logo */
+#logoContainer {
+    width: 300px;
+    height: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 10px;
+    padding: 12px;
+    box-shadow: 0px 0px 15px rgba(135, 206, 250, 0.8);
+    border-radius: 8px;
+}
+
+#companyLogo {
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+}
+
+/* Page Title */
+h1 {
+    font-size: 30px;
+    font-weight: bold;
+    color: #87CEFA;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 15px;
+}
+
+/* Search & Sort Bar Container */
+.filter-container {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+/* Search Bar */
+#searchBar {
+    width: 35%;
+    padding: 12px;
+    border: 1px solid #444;
+    border-radius: 5px;
+    font-size: 16px;
+    background-color: #1e1e1e;
+    color: #e0e0e0;
+}
+
+/* Sort Bar */
+#sortBar {
+    width: 20%;
+    padding: 12px;
+    border: 1px solid #444;
+    border-radius: 5px;
+    font-size: 16px;
+    background-color: #1e1e1e;
+    color: #e0e0e0;
+    cursor: pointer;
+}
+
+/* Container for Truck Cards */
+#truckContainer {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+}
+
+/* Individual Truck Card */
+.truck-card {
+    background: #1e1e1e;
+    padding: 15px;
+    border-radius: 8px;
+    width: 340px;
+    box-shadow: 2px 2px 10px rgba(135, 206, 250, 0.5);
+    text-align: left;
+    transition: transform 0.2s ease-in-out;
+    position: relative;
+}
+
+.truck-card:hover {
+    transform: scale(1.05);
+}
+
+/* Truck Image */
+.truck-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 5px;
+    margin-bottom: 10px;
+}
+
+/* Truck Title */
+.truck-card h2 {
+    font-size: 22px;
+    font-weight: bold;
+    text-align: center;
+    color: #87CEFA;
+    margin-bottom: 10px;
+}
+
+/* Truck Info */
+.truck-card p {
+    margin: 5px 0;
+    font-size: 16px;
+}
+
+/* Status Button Styles */
+.status-btn {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    font-weight: bold;
+    border: none;
+    border-radius: 5px;
+    text-align: center;
+    margin-top: 12px;
+    cursor: default;
+}
+
+/* Green for In Operation */
+.status-btn.in-operation {
+    background-color: #28a745;
+    color: white;
+}
+
+/* Red for Out of Service */
+.status-btn.out-of-service {
+    background-color: #dc3545;
+    color: white;
+}
+
+/* View Log Button */
+.view-log-btn {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    margin-top: 12px;
+    background: #5DADE2;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    font-weight: bold;
+    text-align: center;
+    cursor: pointer;
+    transition: background 0.2s ease-in-out;
+}
+
+.view-log-btn:hover {
+    background: #3A8FBD;
+}
+
+/* Log Page Styles */
+.log-container {
+    background: #1e1e1e;
+    padding: 30px;
+    border-radius: 8px;
+    width: 55%;
+    margin: auto;
+    box-shadow: 2px 2px 10px rgba(135, 206, 250, 0.5);
+    position: relative; /* Allows positioning elements inside */
+    text-align: left; /* Keeps log details left-aligned */
+}
+
+/* Centered and Larger Truck Title */
+#truckTitle {
+    font-size: 28px;
+    font-weight: bold;
+    text-align: center;
+    color: #87CEFA;
+    margin-bottom: 15px;
+}
+
+/* Edit Button - Positioned at the Top Right */
+.edit-btn {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    background: #5DADE2;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    font-weight: bold;
+    padding: 10px 15px;
+    cursor: pointer;
+    transition: background 0.2s ease-in-out;
+}
+
+.edit-btn:hover {
+    background: #3A8FBD;
+}
+
+/* Log Details Section - Keeps All Text Left-Aligned */
+#truckDetails {
+    margin-bottom: 30px; /* Increased bottom margin */
+}
+
+#truckDetails p {
+    font-size: 16px;
+    color: #e0e0e0;
+    margin: 8px 0;
+}
+
+/* Increased Spacing Between Sections */
+.log-container h3 {
+    margin-top: 30px;
+    font-size: 20px;
+    color: #87CEFA;
+    text-align: left; /* Ensures headers remain left-aligned */
+}
+
+/* Log List */
+.log-container ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.log-container ul li {
+    background: #2a2a2a;
+    padding: 12px;
+    margin: 6px 0;
+    border-radius: 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Delete Entry Button */
+.delete-entry {
+    color: #dc3545;
+    font-weight: bold;
+    cursor: pointer;
+    margin-left: 10px;
+    font-size: 18px;
+}
+
+.delete-entry:hover {
+    color: #ff6b6b;
+}
+
+/* Input Fields for Maintenance, Repairs, and Notes */
+.log-container input[type="text"], 
+.log-container input[type="datetime-local"] {
+    width: 85%;
+    padding: 12px;
+    margin-top: 12px;
+    border: 1px solid #444;
+    border-radius: 5px;
+    font-size: 16px;
+    background-color: #2a2a2a;
+    color: #e0e0e0;
+}
+
+/* Add Entry Button */
+.log-container .add-entry-btn {
+    width: auto;
+    padding: 10px 18px;
+    margin-top: 12px;
+    background: #5DADE2;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    font-weight: bold;
+    text-align: center;
+    cursor: pointer;
+    transition: background 0.2s ease-in-out;
+}
+
+.log-container .add-entry-btn:hover {
+    background: #3A8FBD;
+}
+
+/* Bottom Buttons - Export Log & Back to Dashboard */
+.bottom-buttons {
+    margin-top: 30px;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+.bottom-buttons button {
+    width: 200px;
+    padding: 14px;
+    background: #87CEFA;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s ease-in-out;
+}
+
+.bottom-buttons button:hover {
+    background: #5DADE2;
+}
+
+/* Color Indicator Circle */
+.color-circle {
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 1px solid #e0e0e0;
+    margin-left: 8px;
+    vertical-align: middle;
+}
+
+/* Modal Background */
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed;
+    z-index: 1000; /* Ensures it's on top */
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7); /* Semi-transparent dark background */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Modal Content */
+.modal-content {
+    background: #1e1e1e; /* Dark theme */
+    padding: 25px;
+    border-radius: 10px;
+    width: 50%;
+    max-width: 500px; /* Ensures it looks good on different screen sizes */
+    box-shadow: 0px 0px 15px rgba(135, 206, 250, 0.8); /* Baby blue glow effect */
+    text-align: center;
+    position: relative;
+}
+
+/* Close Button */
+.close {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    font-size: 22px;
+    color: #ff4c4c; /* Red close button */
+    cursor: pointer;
+    transition: color 0.2s ease-in-out;
+}
+
+.close:hover {
+    color: #ff8585;
+}
+
+/* Modal Heading */
+.modal-content h2 {
+    font-size: 24px;
+    color: #87CEFA; /* Light blue */
+    margin-bottom: 15px;
+    display:none;
+}
+
+/* Input Fields */
+.modal-content label {
+    display: block;
+    text-align: left;
+    font-size: 16px;
+    color: #e0e0e0;
+    margin: 10px 0 5px;
+}
+
+.modal-content input, .modal-content select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #444;
+    border-radius: 5px;
+    font-size: 16px;
+    background-color: #2a2a2a;
+    color: #e0e0e0;
+    outline: none;
+    transition: border-color 0.2s ease-in-out;
+}
+
+.modal-content input:focus, .modal-content select:focus {
+    border-color: #5DADE2; /* Light blue border on focus */
+}
+
+/* Save Button */
+.save-btn {
+    width: 100%;
+    padding: 12px;
+    margin-top: 20px;
+    background: #5DADE2; /* Light blue */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s ease-in-out;
+}
+
+.save-btn:hover {
+    background: #3A8FBD; /* Darker blue */
+}
+
+/* Responsive Modal */
+@media screen and (max-width: 600px) {
+    .modal-content {
+        width: 90%;
+        max-width: none;
+    }
+}
