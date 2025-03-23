@@ -33,23 +33,45 @@
         <ul id="maintenanceList"></ul>
         <div class="entry-container">
             <input type="text" id="maintenanceInput" placeholder="Enter maintenance details...">
-            <button class="add-entry-btn" onclick="addEntry('maintenanceList', 'maintenanceInput')">Add Entry</button>
+            <label class="upload-icon">
+                📎
+                <input type="file" id="maintenanceFile" class="hidden-file-input" accept=".jpg,.jpeg,.png,.pdf"
+                    onchange="previewSelectedFile('maintenanceFile', 'maintenancePreview')">
+
+            </label>
+            <button class="add-entry-btn"
+                onclick="addEntry('maintenanceList', 'maintenanceInput', 'maintenanceFile')">Add Entry</button>
+            <div id="maintenancePreview" class="file-preview"></div>
         </div>
 
         <!-- Repairs Needed -->
         <h3>Repairs Needed</h3>
         <ul id="repairsList"></ul>
         <div class="entry-container">
-            <input type="text" id="repairInput" placeholder="Enter repair details...">
-            <button class="add-entry-btn" onclick="addEntry('repairsList', 'repairInput')">Add Entry</button>
+            <input type="text" id="repairsInput" placeholder="Enter Repair details...">
+            <label class="upload-icon">
+                📎
+                <input type="file" id="repairsFile" class="hidden-file-input" accept=".jpg,.jpeg,.png,.pdf"
+                    onchange="previewSelectedFile('repairsFile', 'repairsPreview')">
+            </label>
+            <button class="add-entry-btn" onclick="addEntry('repairsList', 'repairsInput', 'repairsFile')">Add
+                Entry</button>
+            <div id="repairsPreview" class="file-preview"></div>
         </div>
 
         <!-- Notes Section -->
         <h3>Notes</h3>
         <ul id="notesList"></ul>
         <div class="entry-container">
-            <input type="text" id="notesInput" placeholder="Enter notes...">
-            <button class="add-entry-btn" onclick="addEntry('notesList', 'notesInput')">Add Entry</button>
+            <input type="text" id="notesInput" placeholder="Enter Note details...">
+            <label class="upload-icon">
+                📎
+                <input type="file" id="notesFile" class="hidden-file-input" accept=".jpg,.jpeg,.png,.pdf"
+                    onchange="previewSelectedFile('notesFile', 'notesPreview')">
+
+            </label>
+            <button class="add-entry-btn" onclick="addEntry('notesList', 'notesInput', 'notesFile')">Add Entry</button>
+            <div id="notesPreview" class="file-preview"></div>
         </div>
 
         <!-- Bottom Buttons -->
@@ -231,29 +253,49 @@
             populateList("repairsList", localData.repairsList || []);
         }
 
-        function addEntry(listId, inputId) {
-            const input = document.getElementById(inputId);
-            const text = input.value.trim();
-            if (!text) return;
+        function addEntry(listId, inputId, fileInputId = null) {
+    const input = document.getElementById(inputId);
+    const text = input.value.trim();
+    if (!text) return;
 
-            const vin = getVIN();
-            let storedData = JSON.parse(localStorage.getItem(`truck_${vin}`)) || {};
-            if (!storedData[listId]) storedData[listId] = [];
+    const vin = getVIN();
+    let storedData = JSON.parse(localStorage.getItem(`truck_${vin}`)) || {};
+    if (!storedData[listId]) storedData[listId] = [];
 
-            const timestamp = new Date().toLocaleString();
-            const entryText = `${text} (Added: ${timestamp})`;
+    const timestamp = new Date().toLocaleString();
+    const entryText = `${text} (Added: ${timestamp})`;
 
-            // ✅ Prevent duplicate entries
-            if (!storedData[listId].includes(entryText)) {
-                storedData[listId].push(entryText);
-            }
+    // ✅ Prevent duplicate entries
+    if (!storedData[listId].includes(entryText)) {
+        storedData[listId].push(entryText);
+    }
 
-            localStorage.setItem(`truck_${vin}`, JSON.stringify(storedData));
-            sessionStorage.setItem(`truck_${vin}`, JSON.stringify(storedData));
+    // ✅ Save to storage
+    localStorage.setItem(`truck_${vin}`, JSON.stringify(storedData));
+    sessionStorage.setItem(`truck_${vin}`, JSON.stringify(storedData));
 
-            populateList(listId, storedData[listId]);
-            input.value = "";
-        }
+    // ✅ Handle file metadata (always clear old metadata at this index)
+    if (fileInputId) {
+        const fileInput = document.getElementById(fileInputId);
+        const file = fileInput?.files?.[0];
+        const index = storedData[listId].length - 1;
+
+        // 🔄 Save file metadata (or clear it if no file selected)
+        saveFileMetadata(vin, listId, index, file || null);
+
+        // 🧼 Clear file input and preview
+        fileInput.value = "";
+        const previewId = fileInputId.replace("File", "Preview");
+        const previewContainer = document.getElementById(previewId);
+        if (previewContainer) previewContainer.innerHTML = "";
+    }
+
+    // 🧹 Clear text input
+    input.value = "";
+
+    // 🔄 Refresh UI
+    populateList(listId, storedData[listId]);
+}
 
         // ✅ Save Changes to Sheets and Update UI
         function saveEdits() {
@@ -316,16 +358,23 @@
             let storedData = JSON.parse(localStorage.getItem(`truck_${vin}`)) || {};
             let sheetNotes = storedData.notes || [];
 
+            // ✅ Merge sheet notes + user-added notes for notesList only
             if (listId === "notesList") {
-                // ✅ Merge sheet notes + user-added notes
                 items = [...new Set([...sheetNotes, ...items])];
             }
 
             if (items && items.length > 0) {
                 items.forEach((item, index) => {
                     const li = document.createElement("li");
-                    li.textContent = item;
                     li.setAttribute("data-index", index);
+
+                    // 🔹 Entry Row (text + delete button)
+                    const entryRow = document.createElement("div");
+                    entryRow.className = "entry-row";
+
+                    const entryText = document.createElement("span");
+                    entryText.className = "entry-text";
+                    entryText.textContent = item;
 
                     const deleteButton = document.createElement("button");
                     deleteButton.textContent = "❌";
@@ -334,14 +383,92 @@
                         deleteEntry(listId, index);
                     };
 
-                    li.appendChild(deleteButton);
+                    entryRow.appendChild(entryText);
+                    entryRow.appendChild(deleteButton);
+
+                    // 🔹 File Display Area
+                    const fileDisplay = document.createElement("div");
+                    fileDisplay.className = "file-list";
+
+                    // 🔹 Append to list item
+                    li.appendChild(entryRow);
+                    li.appendChild(fileDisplay);
                     list.appendChild(li);
+
+                    // 🔹 Load any file attachments
+                    renderFileList(li, vin, listId, index);
                 });
             } else {
                 list.innerHTML = "<p>No entries available.</p>";
             }
+        }
 
-            // ❌ REMOVE THIS LINE: applyDeleteHandlers(listId); <- Not defined, not needed
+        function previewSelectedFile(fileInputId, previewContainerId) {
+            const fileInput = document.getElementById(fileInputId);
+            const previewContainer = document.getElementById(previewContainerId);
+
+            if (!fileInput || !previewContainer) return;
+
+            previewContainer.innerHTML = ""; // Clear previous preview
+
+            const file = fileInput.files[0];
+            if (file) {
+                const fileItem = document.createElement("div");
+                fileItem.className = "file-item";
+                fileItem.textContent = `Selected: ${file.name}`;
+                previewContainer.appendChild(fileItem);
+            }
+        }
+
+        function saveFileMetadata(vin, listId, index, file) {
+    let metadata = JSON.parse(localStorage.getItem("file_metadata")) || {};
+    if (!metadata[vin]) metadata[vin] = {};
+    if (!metadata[vin][listId]) metadata[vin][listId] = {};
+
+    if (file) {
+        const entry = {
+            name: file.name,
+            type: file.type,
+            size: file.size,
+            url: URL.createObjectURL(file)
+        };
+        metadata[vin][listId][index] = [entry]; // Overwrite with new file
+    } else {
+        // No file selected – clear out any old file data for this entry
+        metadata[vin][listId][index] = [];
+    }
+
+    localStorage.setItem("file_metadata", JSON.stringify(metadata));
+}
+
+        function renderFileList(li, vin, listId, index) {
+            const metadata = JSON.parse(localStorage.getItem("file_metadata")) || {};
+            const files = metadata[vin]?.[listId]?.[index] || [];
+
+            const fileListContainer = li.querySelector(".file-list");
+            fileListContainer.innerHTML = "";
+
+            files.forEach((file, i) => {
+                const fileItem = document.createElement("div");
+                fileItem.className = "file-item";
+
+                const link = document.createElement("a");
+                link.href = file.url;
+                link.target = "_blank";
+                link.textContent = file.name;
+
+                const deleteBtn = document.createElement("button");
+                deleteBtn.textContent = "🗑️";
+                deleteBtn.onclick = function () {
+                    files.splice(i, 1);
+                    localStorage.setItem("file_metadata", JSON.stringify(metadata));
+                    renderFileList(li, vin, listId, index);
+                };
+
+                fileItem.appendChild(link);
+                fileItem.appendChild(deleteBtn);
+                fileListContainer.appendChild(fileItem);
+            });
         }
 
         function deleteEntry(listId, index) {

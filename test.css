@@ -180,8 +180,10 @@ h1 {
     width: 55%;
     margin: auto;
     box-shadow: 2px 2px 10px rgba(135, 206, 250, 0.5);
-    position: relative; /* Allows positioning elements inside */
-    text-align: left; /* Keeps log details left-aligned */
+    position: relative;
+    /* Allows positioning elements inside */
+    text-align: left;
+    /* Keeps log details left-aligned */
 }
 
 /* Centered and Larger Truck Title */
@@ -215,7 +217,8 @@ h1 {
 
 /* Log Details Section - Keeps All Text Left-Aligned */
 #truckDetails {
-    margin-bottom: 30px; /* Increased bottom margin */
+    margin-bottom: 30px;
+    /* Increased bottom margin */
 }
 
 #truckDetails p {
@@ -229,23 +232,8 @@ h1 {
     margin-top: 30px;
     font-size: 20px;
     color: #87CEFA;
-    text-align: left; /* Ensures headers remain left-aligned */
-}
-
-/* Log List */
-.log-container ul {
-    list-style-type: none;
-    padding: 0;
-}
-
-.log-container ul li {
-    background: #2a2a2a;
-    padding: 12px;
-    margin: 6px 0;
-    border-radius: 5px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    text-align: left;
+    /* Ensures headers remain left-aligned */
 }
 
 /* Delete Entry Button */
@@ -262,7 +250,7 @@ h1 {
 }
 
 /* Input Fields for Maintenance, Repairs, and Notes */
-.log-container input[type="text"], 
+.log-container input[type="text"],
 .log-container input[type="datetime-local"] {
     width: 85%;
     padding: 12px;
@@ -332,14 +320,17 @@ h1 {
 
 /* Modal Background */
 .modal {
-    display: none; /* Hidden by default */
+    display: none;
+    /* Hidden by default */
     position: fixed;
-    z-index: 1000; /* Ensures it's on top */
+    z-index: 1000;
+    /* Ensures it's on top */
     left: 0;
     top: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.7); /* Semi-transparent dark background */
+    background-color: rgba(0, 0, 0, 0.7);
+    /* Semi-transparent dark background */
     display: flex;
     justify-content: center;
     align-items: center;
@@ -347,12 +338,15 @@ h1 {
 
 /* Modal Content */
 .modal-content {
-    background: #1e1e1e; /* Dark theme */
+    background: #1e1e1e;
+    /* Dark theme */
     padding: 25px;
     border-radius: 10px;
     width: 50%;
-    max-width: 500px; /* Ensures it looks good on different screen sizes */
-    box-shadow: 0px 0px 15px rgba(135, 206, 250, 0.8); /* Baby blue glow effect */
+    max-width: 500px;
+    /* Ensures it looks good on different screen sizes */
+    box-shadow: 0px 0px 15px rgba(135, 206, 250, 0.8);
+    /* Baby blue glow effect */
     text-align: center;
     position: relative;
 }
@@ -363,7 +357,8 @@ h1 {
     top: 15px;
     right: 20px;
     font-size: 22px;
-    color: #ff4c4c; /* Red close button */
+    color: #ff4c4c;
+    /* Red close button */
     cursor: pointer;
     transition: color 0.2s ease-in-out;
 }
@@ -375,9 +370,10 @@ h1 {
 /* Modal Heading */
 .modal-content h2 {
     font-size: 24px;
-    color: #87CEFA; /* Light blue */
+    color: #87CEFA;
+    /* Light blue */
     margin-bottom: 15px;
-    display:none;
+    display: none;
 }
 
 /* Input Fields */
@@ -389,7 +385,8 @@ h1 {
     margin: 10px 0 5px;
 }
 
-.modal-content input, .modal-content select {
+.modal-content input,
+.modal-content select {
     width: 100%;
     padding: 10px;
     border: 1px solid #444;
@@ -401,8 +398,10 @@ h1 {
     transition: border-color 0.2s ease-in-out;
 }
 
-.modal-content input:focus, .modal-content select:focus {
-    border-color: #5DADE2; /* Light blue border on focus */
+.modal-content input:focus,
+.modal-content select:focus {
+    border-color: #5DADE2;
+    /* Light blue border on focus */
 }
 
 /* Save Button */
@@ -410,7 +409,8 @@ h1 {
     width: 100%;
     padding: 12px;
     margin-top: 20px;
-    background: #5DADE2; /* Light blue */
+    background: #5DADE2;
+    /* Light blue */
     color: white;
     border: none;
     border-radius: 5px;
@@ -421,7 +421,8 @@ h1 {
 }
 
 .save-btn:hover {
-    background: #3A8FBD; /* Darker blue */
+    background: #3A8FBD;
+    /* Darker blue */
 }
 
 /* Responsive Modal */
@@ -430,4 +431,104 @@ h1 {
         width: 90%;
         max-width: none;
     }
+}
+
+.upload-icon {
+    font-size: 18px;
+    cursor: pointer;
+    margin-left: 10px;
+    user-select: none;
+    position: relative;
+    top: 3px;
+}
+
+.upload-icon input[type="file"] {
+    display: none;
+}
+
+.entry-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.file-list {
+    margin-top: 5px;
+}
+
+.file-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+}
+
+/* Log List Items - Flex layout for clean spacing */
+.log-container ul li {
+    background: #2a2a2a;
+    padding: 12px;
+    margin: 6px 0;
+    border-radius: 5px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    position: relative;
+}
+
+/* Text + Delete row */
+.log-container ul li .entry-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    gap: 10px;
+}
+
+/* Text inside entry */
+.log-container ul li .entry-text {
+    flex-grow: 1;
+    word-break: break-word;
+    color: #e0e0e0;
+}
+
+/* Delete Button */
+.delete-btn {
+    background: none;
+    border: none;
+    color: #ff4c4c;
+    font-size: 18px;
+    cursor: pointer;
+    transition: color 0.2s ease-in-out;
+}
+
+.delete-btn:hover {
+    color: #ff6b6b;
+}
+
+/* File list area under each entry */
+.file-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding-top: 4px;
+    padding-left: 2px;
+}
+
+.file-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background-color: #333;
+    color: #87CEFA;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.file-preview {
+    margin-top: 8px;
+    font-size: 14px;
+    color: #87CEFA;
 }
