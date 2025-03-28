@@ -349,6 +349,12 @@ h1 {
     /* Baby blue glow effect */
     text-align: center;
     position: relative;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.95); }
+    to { opacity: 1; transform: scale(1); }
 }
 
 /* Close Button */
@@ -373,7 +379,6 @@ h1 {
     color: #87CEFA;
     /* Light blue */
     margin-bottom: 15px;
-    display: none;
 }
 
 /* Input Fields */
@@ -455,13 +460,6 @@ h1 {
 
 .file-list {
     margin-top: 5px;
-}
-
-.file-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 14px;
 }
 
 /* Log List Items - Flex layout for clean spacing */
