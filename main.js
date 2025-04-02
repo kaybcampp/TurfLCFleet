@@ -36,7 +36,7 @@ async function loadTruckLog() {
         return;
     }
 
-    const normalizedVIN = vin.trim().toLowerCase();
+    const normalizedVIN = vin.trim().toUpperCase();
     console.log("🚗 Fetching truck details from Google Sheets...");
 
     try {
@@ -53,12 +53,13 @@ async function loadTruckLog() {
 
         let sheetData = null;
 
+        // Step 1: Get the truck details from Google Sheets
         for (let i = 1; i < data.length; i++) {
             const row = data[i];
             if (row.length < 10) continue;
 
             const vinData = row[9];
-            if (vinData.trim().toLowerCase() === normalizedVIN) {
+            if (vinData.trim().toUpperCase() === normalizedVIN) {
                 console.log("✅ VIN Matched!");
 
                 sheetData = {
@@ -85,26 +86,55 @@ async function loadTruckLog() {
             return;
         }
 
-        displayTruckData(sheetData);
+        // Step 2: Check for updates in Supabase (truck_edits table)
+        const { data: truckEdits, error } = await supabase
+            .from('truck_edits')
+            .select('*')
+            .eq('vin', normalizedVIN)
+            .single(); // Assuming one record per truck
 
+        if (error) {
+            console.error("❌ Error fetching truck details from Supabase:", error);
+        }
+
+        if (truckEdits) {
+            // Override sheet data with truck_edits data if it exists
+            sheetData.mileage = truckEdits.mileage || sheetData.mileage;
+            sheetData.engine = truckEdits.engine || sheetData.engine;
+            sheetData.fuel = truckEdits.fuel || sheetData.fuel;
+            sheetData.title = truckEdits.title || sheetData.title;
+            sheetData.plate = truckEdits.plate || sheetData.plate;
+            sheetData.regExp = truckEdits.regExp || sheetData.regExp;
+            sheetData.insExp = truckEdits.insExp || sheetData.insExp;
+            sheetData.inspExp = truckEdits.inspExp || sheetData.inspExp;
+            sheetData.status = truckEdits.status || sheetData.status;  // Ensure status is updated from Supabase
+        }
+
+        // Update sessionStorage after fetching the updated status
+        sessionStorage.setItem(`status_${normalizedVIN}`, sheetData.status);
+
+        // Step 3: Display truck data (either from Sheets or Supabase)
+        displayTruckData(sheetData); // Ensure the truck details are correctly displayed with updated status
+
+        // Step 4: Process notes from Sheets and logs from Supabase
         const sheetNotes = (sheetData.notes || []).map(note => ({
             vin: sheetData.vin,
             list_type: "notes",
             entry_text: note,
-            created_at: "2000-01-01T00:00:00Z",
+            created_at: "2000-01-01T00:00:00Z", // Placeholder timestamp
             file_url: null,
             file_name: null
         }));
 
-        // 🧾 Supabase Logs (matching lowercase VIN)
-        const { data: supabaseLogs, error } = await supabase
+        // Step 5: Fetch logs from Supabase (truck_logs)
+        const { data: supabaseLogs, error: logError } = await supabase
             .from('truck_logs')
             .select('*')
             .ilike('vin', normalizedVIN)
             .order('created_at', { ascending: true });
 
-        if (error) {
-            console.error("❌ Error loading logs from Supabase:", error);
+        if (logError) {
+            console.error("❌ Error loading logs from Supabase:", logError);
             return;
         }
 
@@ -120,10 +150,11 @@ async function loadTruckLog() {
             .filter(e => (e.list_type || "").trim().toLowerCase() === "notes")
             .sort((a, b) => new Date(a.created_at || "2000-01-01") - new Date(b.created_at || "2000-01-01"));
 
-        console.log("🛠️ Repairs List:", repairsList);
+        console.log("🛠️ Maintenance List:", maintenanceList);
+        console.log("🔧 Repairs List:", repairsList);
         console.log("📝 Notes List:", notesList);
 
-        // Populate with IDs (important for deletion)
+        // Step 6: Populate lists with logs (important for deletion)
         populateList("maintenanceList", maintenanceList);
         populateList("repairsList", repairsList);
         populateList("notesList", notesList);
@@ -135,6 +166,8 @@ async function loadTruckLog() {
 
 function displayTruckData(data) {
     document.getElementById("truckTitle").textContent = data.truckTitle;
+
+    // Updating the truck details section with the data
     document.getElementById("truckDetails").innerHTML = `
     <p><strong>Mileage:</strong> ${data.mileage} miles</p>
     <p><strong>Color:</strong> ${data.color}</p>
@@ -152,6 +185,85 @@ function displayTruckData(data) {
         </span>
     </p>
     `;
+
+    // Optional: Adding additional logic to handle specific UI changes if needed (like showing warnings for expired insurance)
+    if (data.insExp && new Date(data.insExp) < new Date()) {
+        document.getElementById("truckStatus").classList.add("expired-insurance");
+    }
+}
+
+async function saveEdits() {
+    const vin = getVIN();
+    const mileage = document.getElementById("editMileage").value.trim();
+    const engine = document.getElementById("editEngine").value.trim();
+    const fuel = document.getElementById("editFuel").value.trim();
+    const title = document.getElementById("editTitle").value.trim();
+    const plate = document.getElementById("editPlate").value.trim();
+    const regExp = document.getElementById("editRegExp").value.trim();  // Corrected variable name
+    const insExp = document.getElementById("editInsExp").value.trim();
+    const inspExp = document.getElementById("editInspExp").value.trim();
+    const status = document.getElementById("editStatus").value.trim();
+
+    // Validate that all fields are filled out
+    if (!mileage || !engine || !fuel || !title || !plate || !regExp || !insExp || !inspExp || !status) {
+        alert("❌ All fields must be filled out.");
+        return;
+    }
+
+    const truckDetails = {
+        vin,
+        mileage,
+        engine,
+        fuel,
+        title,
+        plate,
+        regExp,  // Corrected variable name
+        insExp,
+        inspExp,
+        status
+    };
+
+    try {
+        // Step 1: Use `upsert` to insert or update the truck details in Supabase
+        const { error } = await supabase
+            .from('truck_edits')
+            .upsert([{
+                vin: truckDetails.vin,
+                mileage: truckDetails.mileage,
+                engine: truckDetails.engine,
+                fuel: truckDetails.fuel,
+                title: truckDetails.title,
+                plate: truckDetails.plate,
+                regExp: truckDetails.regExp,  // Corrected variable name
+                insExp: truckDetails.insExp,
+                inspExp: truckDetails.inspExp,
+                status: truckDetails.status
+            }]);
+
+        if (error) {
+            console.error("❌ Error saving truck details:", error.message);
+            return;
+        }
+
+        console.log("✅ Truck details saved successfully.");
+        showSuccessMessage("✅ Changes saved successfully!");
+
+        // Step 2: Update sessionStorage for status
+        sessionStorage.setItem(`status_${vin}`, truckDetails.status);
+
+        // Step 3: Update status in the UI immediately (without waiting for reload)
+        document.getElementById("truckStatus").textContent = truckDetails.status;
+        document.getElementById("truckStatus").className = `status ${truckDetails.status === 'In Operation' ? 'in-operation' : 'out-of-service'}`;
+
+        // Step 4: Reload truck log to reflect the changes (reload entire truck log after saving)
+        await loadTruckLog();
+
+    } catch (error) {
+        console.error("❌ Error saving truck details:", error);
+    }
+
+    // Close the modal after saving
+    closeEditForm();
 }
 
 async function addEntry(listId, inputId, fileInputId = null) {
@@ -448,18 +560,35 @@ function showSuccessMessage(message) {
 
 function prefillEditForm() {
     const vin = getVIN();
-    const storedData = JSON.parse(localStorage.getItem(`truck_${vin}`)) || {};
 
-    document.getElementById("editMileage").value = storedData.mileage || "";
-    document.getElementById("editEngine").value = storedData.engine || "";
-    document.getElementById("editFuel").value = storedData.fuel || "";
-    document.getElementById("editVIN").value = storedData.vin || "";
-    document.getElementById("editTitle").value = storedData.title || "";
-    document.getElementById("editPlate").value = storedData.plate || "";
-    document.getElementById("editRegExp").value = storedData.regExp || "";
-    document.getElementById("editInsExp").value = storedData.insExp || "";
-    document.getElementById("editInspExp").value = storedData.inspExp || "";
-    document.getElementById("editStatus").value = storedData.status || "In Operation";
+    // Fetch truck details from the page
+    const truckTitle = document.getElementById("truckTitle").textContent.trim();
+
+    // Select paragraphs from truckDetails section and match based on content
+    const truckDetails = document.getElementById("truckDetails");
+    const details = {
+        mileage: Array.from(truckDetails.querySelectorAll("p")).find(p => p.textContent.includes("Mileage"))?.textContent.replace("Mileage:", "").trim() || "",
+        engine: Array.from(truckDetails.querySelectorAll("p")).find(p => p.textContent.includes("Engine Type"))?.textContent.replace("Engine Type:", "").trim() || "",
+        fuel: Array.from(truckDetails.querySelectorAll("p")).find(p => p.textContent.includes("Fuel Type"))?.textContent.replace("Fuel Type:", "").trim() || "",
+        title: Array.from(truckDetails.querySelectorAll("p")).find(p => p.textContent.includes("Title #"))?.textContent.replace("Title #:", "").trim() || "",
+        plate: Array.from(truckDetails.querySelectorAll("p")).find(p => p.textContent.includes("Plate #"))?.textContent.replace("Plate #:", "").trim() || "",
+        regExp: Array.from(truckDetails.querySelectorAll("p")).find(p => p.textContent.includes("Registration Exp"))?.textContent.replace("Registration Exp:", "").trim() || "",
+        insExp: Array.from(truckDetails.querySelectorAll("p")).find(p => p.textContent.includes("Insurance Exp"))?.textContent.replace("Insurance Exp:", "").trim() || "",
+        inspExp: Array.from(truckDetails.querySelectorAll("p")).find(p => p.textContent.includes("Inspection Exp"))?.textContent.replace("Inspection Exp:", "").trim() || "",
+        status: document.getElementById("truckStatus")?.textContent.trim() || "In Operation"
+    };
+
+    // Prefill the modal with these details
+    document.getElementById("editMileage").value = details.mileage;
+    document.getElementById("editEngine").value = details.engine;
+    document.getElementById("editFuel").value = details.fuel;
+    document.getElementById("editVIN").value = vin;
+    document.getElementById("editTitle").value = details.title;
+    document.getElementById("editPlate").value = details.plate;
+    document.getElementById("editRegExp").value = details.regExp;
+    document.getElementById("editInsExp").value = details.insExp;
+    document.getElementById("editInspExp").value = details.inspExp;
+    document.getElementById("editStatus").value = details.status;
 }
 
 // ✏️ Open the Edit Modal
