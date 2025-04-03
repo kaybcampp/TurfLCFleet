@@ -321,47 +321,55 @@ async function addEntry(listId, inputId, fileInputId = null) {
         if (file) {
             const filePath = `${vin}/${Date.now()}_${file.name}`;
 
+            // Upload the file to Supabase Storage
             const { data, error } = await supabase.storage
                 .from('truck-files')
                 .upload(filePath, file);
 
             if (error) {
                 console.error("❌ File upload error:", error.message);
-            } else {
-                const { publicUrl } = supabase.storage.from('truck-files').getPublicUrl(filePath);
-                fileUrl = publicUrl;
-                fileName = file.name;
+                return; // Ensure the function exits early if there's an error
             }
 
+            // Construct the public URL based on the known structure
+            fileUrl = `https://ygyihoulxucbffftfoqw.supabase.co/storage/v1/object/public/truck-files/${filePath}`;
+            fileName = file.name; // Store the file name
+
+            console.log("Manually Constructed File Public URL: ", fileUrl);
+
             // 🧼 Clear file input and preview display
-            fileInput.value = "";
+            fileInput.value = ""; // Reset the file input
             const previewId = fileInputId.replace("File", "Preview");
             const previewContainer = document.getElementById(previewId);
-            if (previewContainer) previewContainer.innerHTML = "";
+            if (previewContainer) {
+                previewContainer.innerHTML = ""; // Clear the preview box
+                previewContainer.style.display = "none"; // Explicitly hide the preview container
+            }
         }
     }
 
-    // ✅ Save the log entry in Supabase
+    // ✅ Save the log entry in Supabase with the file URL
     const { error: logError } = await supabase.from('truck_logs').insert([{
         vin: vin,
         list_type: listId.replace("List", "").toLowerCase(),
         entry_text: text,
         created_at: timestamp, // Save the timestamp
-        file_url: fileUrl,
-        file_name: fileName
+        file_url: fileUrl, // Store the public URL of the file
+        file_name: fileName // Store the file name
     }]);
 
     if (logError) {
         console.error("❌ Supabase log insert error:", logError.message);
-        return;
+        return; // Exit the function if the log insertion fails
     }
 
     console.log("✅ Entry saved to Supabase:", text);
     showSuccessMessage("✅ Entry added!");
 
     // 🧹 Clear input and refresh logs
-    input.value = "";
-    await loadTruckLog();
+    input.value = ""; // Clear the text input field
+    await loadTruckLog(); // Refresh the truck log to show the new entry
+    console.log("File URL: ", fileUrl);
 }
 
 async function loadLogsFromSupabase(vinRaw) {
@@ -570,6 +578,28 @@ async function deleteEntry(listId, index, id) {
     const listItem = listElement.querySelector(`li[data-index="${index}"]`);
 
     if (!listItem) return;
+
+    const fileUrl = listItem.querySelector('.file-link')?.getAttribute('href');  // Get the file URL from the link
+
+    if (fileUrl) {
+        const filePath = fileUrl.split('truck-files/')[1];  // Extract file path from the URL
+        try {
+            // Delete the file from Supabase Storage
+            const { error: fileDeleteError } = await supabase.storage
+                .from('truck-files')
+                .remove([filePath]);
+
+            if (fileDeleteError) {
+                console.error("❌ Error deleting file:", fileDeleteError.message);
+                return;
+            }
+
+            console.log("✅ File deleted from Supabase Storage:", filePath);
+        } catch (error) {
+            console.error("❌ Error deleting file from Supabase:", error);
+            return;
+        }
+    }
 
     // 🗑️ Delete from Supabase by ID (row ID)
     const { error } = await supabase
