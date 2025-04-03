@@ -230,7 +230,7 @@ function handleFileUpload(event) {
 
 async function saveEdits() {
     const vin = getVIN();
-    const mileage = document.getElementById("editMileage").value.trim();
+    let mileage = document.getElementById("editMileage").value.trim();
     const engine = document.getElementById("editEngine").value.trim();
     const fuel = document.getElementById("editFuel").value.trim();
     const title = document.getElementById("editTitle").value.trim();
@@ -240,6 +240,9 @@ async function saveEdits() {
     const inspExp = document.getElementById("editInspExp").value.trim();
     const status = document.getElementById("editStatus").value.trim();
 
+    // Clean the mileage value by removing any extra " miles" text
+    mileage = mileage.replace(/ miles$/, '');  // Remove the trailing " miles" if it exists
+
     // Validate that all fields are filled out
     if (!mileage || !engine || !fuel || !title || !plate || !regExp || !insExp || !inspExp || !status) {
         alert("❌ All fields must be filled out.");
@@ -248,7 +251,7 @@ async function saveEdits() {
 
     const truckDetails = {
         vin,
-        mileage,
+        mileage,  // Cleaned mileage value
         engine,
         fuel,
         title,
@@ -265,7 +268,7 @@ async function saveEdits() {
             .from('truck_edits')
             .upsert([{
                 vin: truckDetails.vin,
-                mileage: truckDetails.mileage,
+                mileage: truckDetails.mileage,  // Save the cleaned mileage value
                 engine: truckDetails.engine,
                 fuel: truckDetails.fuel,
                 title: truckDetails.title,
