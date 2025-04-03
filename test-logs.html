@@ -37,11 +37,11 @@
                 📎
                 <input type="file" id="maintenanceFile" class="hidden-file-input" accept=".jpg,.jpeg,.png,.pdf"
                     onchange="previewSelectedFile('maintenanceFile', 'maintenancePreview')">
-
             </label>
             <button class="add-entry-btn"
                 onclick="addEntry('maintenanceList', 'maintenanceInput', 'maintenanceFile')">Add Entry</button>
-            <div id="maintenancePreview" class="file-preview"></div>
+                <div id="maintenancePreview" class="file-preview" style="display: none;"></div>
+
         </div>
 
         <!-- Repairs Needed -->
@@ -56,7 +56,7 @@
             </label>
             <button class="add-entry-btn" onclick="addEntry('repairsList', 'repairsInput', 'repairsFile')">Add
                 Entry</button>
-            <div id="repairsPreview" class="file-preview"></div>
+            <div id="repairsPreview" class="file-preview" style="display: none;"></div>
         </div>
 
         <!-- Notes Section -->
@@ -68,10 +68,9 @@
                 📎
                 <input type="file" id="notesFile" class="hidden-file-input" accept=".jpg,.jpeg,.png,.pdf"
                     onchange="previewSelectedFile('notesFile', 'notesPreview')">
-
             </label>
             <button class="add-entry-btn" onclick="addEntry('notesList', 'notesInput', 'notesFile')">Add Entry</button>
-            <div id="notesPreview" class="file-preview"></div>
+            <div id="notesPreview" class="file-preview" style="display: none;"></div>
         </div>
 
         <!-- Bottom Buttons -->

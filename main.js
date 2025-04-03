@@ -192,6 +192,42 @@ function displayTruckData(data) {
     }
 }
 
+function handleFileUpload(event) {
+    const fileInput = event.target;
+    const previewContainer = document.getElementById("filePreview");  // Ensure this is the correct container
+    const file = fileInput.files[0];
+
+    if (file) {
+        previewContainer.innerHTML = "";  // Clear any previous preview
+
+        const fileName = file.name;
+        const fileExtension = fileName.split('.').pop().toLowerCase();
+        
+        let previewElement;
+
+        if (fileExtension === "jpg" || fileExtension === "jpeg" || fileExtension === "png" || fileExtension === "gif") {
+            // Image preview
+            previewElement = document.createElement("img");
+            previewElement.src = URL.createObjectURL(file);
+            previewElement.classList.add("preview-image");  // Ensure proper class is applied for styling
+            previewElement.alt = "Selected preview";  // Add alt text for accessibility
+        } else if (fileExtension === "pdf") {
+            // PDF preview
+            previewElement = document.createElement("a");
+            previewElement.href = URL.createObjectURL(file);
+            previewElement.target = "_blank";
+            previewElement.textContent = "Preview PDF";
+        } else {
+            // For unsupported files, show an icon or message
+            previewElement = document.createElement("span");
+            previewElement.textContent = "File type not supported for preview";
+            previewElement.style.color = "red";
+        }
+
+        previewContainer.appendChild(previewElement);
+    }
+}
+
 async function saveEdits() {
     const vin = getVIN();
     const mileage = document.getElementById("editMileage").value.trim();
@@ -450,19 +486,27 @@ function previewSelectedFile(fileInputId, previewContainerId) {
 
     if (!fileInput || !previewContainer) return;
 
-    previewContainer.innerHTML = ""; // Clear previous preview
+    // Hide the preview container initially
+    previewContainer.style.display = "none";  
 
     const file = fileInput.files[0];
+
+    // If a file is selected
     if (file) {
+        previewContainer.style.display = "flex";  // Show the preview container when a file is selected
+
+        // Clear previous preview
+        previewContainer.innerHTML = ""; 
+
         const fileItem = document.createElement("div");
         fileItem.className = "file-item";
 
-        // 📎 Show filename with icon
+        // Show filename
         const nameDisplay = document.createElement("p");
         nameDisplay.textContent = `📎 ${file.name}`;
         fileItem.appendChild(nameDisplay);
 
-        // 🖼️ Preview image or embed PDF if supported
+        // Handle different file types (image, pdf, etc.)
         const fileType = file.type;
 
         if (fileType.startsWith("image/")) {
@@ -470,21 +514,26 @@ function previewSelectedFile(fileInputId, previewContainerId) {
             img.src = URL.createObjectURL(file);
             img.alt = "Selected preview";
             img.className = "preview-image";
-            img.style.maxWidth = "100%";
-            img.style.marginTop = "8px";
             fileItem.appendChild(img);
         } else if (fileType === "application/pdf") {
             const pdfPreview = document.createElement("embed");
             pdfPreview.src = URL.createObjectURL(file);
             pdfPreview.type = "application/pdf";
-            pdfPreview.width = "100%";
-            pdfPreview.height = "200px";
             pdfPreview.className = "preview-pdf";
-            pdfPreview.style.marginTop = "8px";
             fileItem.appendChild(pdfPreview);
+        } else {
+            // For unsupported files
+            const unsupportedMessage = document.createElement("span");
+            unsupportedMessage.textContent = "File type not supported for preview";
+            unsupportedMessage.style.color = "red";
+            fileItem.appendChild(unsupportedMessage);
         }
 
+        // Append the preview item to the container
         previewContainer.appendChild(fileItem);
+    } else {
+        // If no file is selected, keep the preview container hidden
+        previewContainer.style.display = "none";
     }
 }
 
