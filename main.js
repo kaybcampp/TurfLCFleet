@@ -708,71 +708,32 @@ window.onload = function () {
         }
     });
 
-    // ✅ Export PDF Button Logic with URL and Content Check
-document.getElementById("exportPDF").addEventListener("click", async function () {
-    const customerKey = "ac9506";  // Make sure your API key is valid and works for the live site
-    const truckTitle = document.getElementById("truckTitle").textContent.trim().replace(/\s+/g, "_") || "Truck_Log";
-
-    // Capture the current live URL of the page, but ensure we are on the correct truck details page
-    const currentUrl = window.location.href;
-
-    // Validate URL to ensure it contains 'vin' query parameter (indicating a truck log page)
-    if (!currentUrl.includes('test-logs.html') || !currentUrl.includes('vin=')) {
-        console.error("❌ The current page is not a truck details page.");
-        return;
-    }
-
-    // Construct API URL for Screenshot Machine
-    let apiUrl = `https://api.screenshotmachine.com?key=${customerKey}`
-        + `&url=${encodeURIComponent(currentUrl)}`
-        + `&device=desktop`
-        + `&dimension=1366xfull`
-        + `&format=png`
-        + `&cacheLimit=0`
-        + `&delay=3000`  // Initial delay to allow the page to load
-        + `&zoom=100`
-        + `&hide=.bottom-buttons`;  // You can customize this part based on elements you want to hide
-
-    // Wait until truck details are loaded
-    function checkIfTruckDetailsLoaded() {
-        // Check if the truck title and truck details section are not empty
-        const truckTitleLoaded = document.getElementById("truckTitle") && document.getElementById("truckTitle").textContent.trim() !== "";
-        const truckDetailsLoaded = document.getElementById("truckDetails") && document.getElementById("truckDetails").innerHTML.trim() !== "";
+    document.getElementById("exportPDF").addEventListener("click", function () {
+        const truckTitle = document.getElementById("truckTitle").textContent.trim().replace(/\s+/g, "_") || "Truck_Log";
         
-        return truckTitleLoaded && truckDetailsLoaded;
-    }
-
-    // Check if the truck details are loaded before taking the screenshot
-    const checkInterval = setInterval(() => {
-        if (checkIfTruckDetailsLoaded()) {
-            clearInterval(checkInterval);  // Stop checking once the truck details are loaded
-            captureScreenshot(apiUrl, truckTitle);  // Capture the screenshot now
+        // Capture only the container with truck details using the class name
+        const container = document.querySelector(".log-container"); // Use querySelector for class name
+        
+        // Ensure the container exists and has content
+        if (container && container.innerHTML.trim() !== "") {
+            html2canvas(container).then(function(canvas) {
+                // Convert the canvas to a base64 image
+                const img = canvas.toDataURL("image/png");
+        
+                // Create a link to download the image
+                const a = document.createElement("a");
+                a.href = img;
+                a.download = `${truckTitle}_log_screenshot.png`;  // Name the downloaded file
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);  // Clean up the link
+            }).catch((error) => {
+                console.error("❌ Error capturing the screenshot:", error);
+            });
+        } else {
+            console.error("🚫 The container with truck details was not found or is empty.");
         }
-    }, 500); // Check every 500 ms until the truck details are loaded (you can adjust this interval if necessary)
-});
-
-// Function to capture and download the screenshot
-async function captureScreenshot(apiUrl, truckTitle) {
-    try {
-        // Fetch the screenshot blob from Screenshot Machine API
-        let response = await fetch(apiUrl);
-        let blob = await response.blob();
-
-        // Create a downloadable link for the screenshot file
-        let a = document.createElement("a");
-        a.href = URL.createObjectURL(blob);
-        a.download = `${truckTitle}_log_screenshot.png`;  // Change file format if needed (e.g., PDF)
-
-        // Append the download link to the document, simulate a click, and remove it
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-
-        console.log("Screenshot saved as:", a.download);
-    } catch (error) {
-        console.error("Error capturing screenshot:", error);
-    }
-}
+    });     
 
     // ✅ Enter key support for all entry inputs
     ["maintenanceInput", "repairsInput", "notesInput"].forEach(inputId => {

@@ -8,6 +8,7 @@
     <link rel="icon" href="fleetLogo.png" type="image/png">
     <link rel="stylesheet" href="test.css">
     <script src="https://apis.google.com/js/api.js"></script> <!-- ✅ Load Google API -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 
 <body>
@@ -75,7 +76,7 @@
 
         <!-- Bottom Buttons -->
         <div class="bottom-buttons">
-            <button id="exportPDF">Export Log as PDF</button>
+            <button id="exportPDF">Export Log as IMG</button>
             <button onclick="window.location.href='index.html'">Back to Dashboard</button>
         </div>
     </div>
@@ -106,7 +107,7 @@
 
     <script type="module" src="supabase-init.js"></script>
 
-    <script src="main.js"></script>
+    <script type="module" src="main.js"></script>
 </body>
 
 </html>
