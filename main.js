@@ -202,7 +202,7 @@ function handleFileUpload(event) {
 
         const fileName = file.name;
         const fileExtension = fileName.split('.').pop().toLowerCase();
-        
+
         let previewElement;
 
         if (fileExtension === "jpg" || fileExtension === "jpeg" || fileExtension === "png" || fileExtension === "gif") {
@@ -498,7 +498,7 @@ function previewSelectedFile(fileInputId, previewContainerId) {
     if (!fileInput || !previewContainer) return;
 
     // Hide the preview container initially
-    previewContainer.style.display = "none";  
+    previewContainer.style.display = "none";
 
     const file = fileInput.files[0];
 
@@ -507,7 +507,7 @@ function previewSelectedFile(fileInputId, previewContainerId) {
         previewContainer.style.display = "flex";  // Show the preview container when a file is selected
 
         // Clear previous preview
-        previewContainer.innerHTML = ""; 
+        previewContainer.innerHTML = "";
 
         const fileItem = document.createElement("div");
         fileItem.className = "file-item";
@@ -710,16 +710,16 @@ window.onload = function () {
 
     document.getElementById("exportPDF").addEventListener("click", function () {
         const truckTitle = document.getElementById("truckTitle").textContent.trim().replace(/\s+/g, "_") || "Truck_Log";
-        
+
         // Capture only the container with truck details using the class name
         const container = document.querySelector(".log-container"); // Use querySelector for class name
-        
+
         // Ensure the container exists and has content
         if (container && container.innerHTML.trim() !== "") {
-            html2canvas(container).then(function(canvas) {
+            html2canvas(container).then(function (canvas) {
                 // Convert the canvas to a base64 image
                 const img = canvas.toDataURL("image/png");
-        
+
                 // Create a link to download the image
                 const a = document.createElement("a");
                 a.href = img;
@@ -733,7 +733,7 @@ window.onload = function () {
         } else {
             console.error("🚫 The container with truck details was not found or is empty.");
         }
-    });     
+    });
 
     // ✅ Enter key support for all entry inputs
     ["maintenanceInput", "repairsInput", "notesInput"].forEach(inputId => {
@@ -756,4 +756,6 @@ window.onload = function () {
     window.addEntry = addEntry;
     window.openEditForm = openEditForm;
     window.closeEditForm = closeEditForm;
+    // Assign it to the global window object to ensure accessibility
+    window.previewSelectedFile = previewSelectedFile;
 };
