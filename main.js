@@ -708,37 +708,65 @@ window.onload = function () {
         }
     });
 
-    // ✅ Export PDF Button Logic
-    document.getElementById("exportPDF").addEventListener("click", async function () {
-        const customerKey = "ac9506";
-        const truckTitle = document.getElementById("truckTitle").textContent.trim().replace(/\s+/g, "_") || "Truck_Log";
+    // ✅ Export PDF Button Logic with Data Loading Check
+document.getElementById("exportPDF").addEventListener("click", async function () {
+    const customerKey = "ac9506";  // Make sure your API key is valid and works for the live site
+    const truckTitle = document.getElementById("truckTitle").textContent.trim().replace(/\s+/g, "_") || "Truck_Log";
 
-        let apiUrl = `https://api.screenshotmachine.com?key=${customerKey}`
-            + `&url=${encodeURIComponent(window.location.href)}`
-            + `&device=desktop`
-            + `&dimension=1366xfull`
-            + `&format=png`
-            + `&cacheLimit=0`
-            + `&delay=400`
-            + `&zoom=100`
-            + `&hide=.bottom-buttons`;
+    // Capture the current live URL of the page
+    const currentUrl = window.location.href;
 
-        try {
-            let response = await fetch(apiUrl);
-            let blob = await response.blob();
+    // Construct API URL for Screenshot Machine
+    let apiUrl = `https://api.screenshotmachine.com?key=${customerKey}`
+        + `&url=${encodeURIComponent(currentUrl)}`
+        + `&device=desktop`
+        + `&dimension=1366xfull`
+        + `&format=png`
+        + `&cacheLimit=0`
+        + `&delay=3000`  // Delay to ensure the page is fully loaded (in milliseconds)
+        + `&zoom=100`
+        + `&hide=.bottom-buttons`;  // You can customize this part based on elements you want to hide
 
-            let a = document.createElement("a");
-            a.href = URL.createObjectURL(blob);
-            a.download = `${truckTitle}_log_screenshot.png`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
+    // Check if specific truck details are loaded
+    function checkIfTruckDetailsLoaded() {
+        // Check if the truck title and truck details section are not empty
+        const truckTitleLoaded = document.getElementById("truckTitle") && document.getElementById("truckTitle").textContent.trim() !== "";
+        const truckDetailsLoaded = document.getElementById("truckDetails") && document.getElementById("truckDetails").innerHTML.trim() !== "";
+        
+        return truckTitleLoaded && truckDetailsLoaded;
+    }
 
-            console.log("Screenshot saved as:", a.download);
-        } catch (error) {
-            console.error("Error capturing screenshot:", error);
+    // Wait until the truck details are loaded before taking the screenshot
+    const checkInterval = setInterval(() => {
+        if (checkIfTruckDetailsLoaded()) {
+            clearInterval(checkInterval);  // Stop checking once the truck details are loaded
+            captureScreenshot(apiUrl, truckTitle);
         }
-    });
+    }, 500); // Check every 500 ms until the truck details are loaded (you can adjust this interval if necessary)
+});
+
+// Function to capture and download the screenshot
+async function captureScreenshot(apiUrl, truckTitle) {
+    try {
+        // Fetch the screenshot blob from Screenshot Machine API
+        let response = await fetch(apiUrl);
+        let blob = await response.blob();
+
+        // Create a downloadable link for the screenshot file
+        let a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = `${truckTitle}_log_screenshot.png`;  // Change file format if needed (e.g., PDF)
+
+        // Append the download link to the document, simulate a click, and remove it
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+
+        console.log("Screenshot saved as:", a.download);
+    } catch (error) {
+        console.error("Error capturing screenshot:", error);
+    }
+}
 
     // ✅ Enter key support for all entry inputs
     ["maintenanceInput", "repairsInput", "notesInput"].forEach(inputId => {
