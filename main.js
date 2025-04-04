@@ -723,7 +723,7 @@ document.getElementById("exportPDF").addEventListener("click", async function ()
         + `&dimension=1366xfull`
         + `&format=png`
         + `&cacheLimit=0`
-        + `&delay=3000`  // Delay to ensure the page is fully loaded (in milliseconds)
+        + `&delay=3000`  // Initial delay to allow the page to load
         + `&zoom=100`
         + `&hide=.bottom-buttons`;  // You can customize this part based on elements you want to hide
 
@@ -740,7 +740,7 @@ document.getElementById("exportPDF").addEventListener("click", async function ()
     const checkInterval = setInterval(() => {
         if (checkIfTruckDetailsLoaded()) {
             clearInterval(checkInterval);  // Stop checking once the truck details are loaded
-            captureScreenshot(apiUrl, truckTitle);
+            captureScreenshot(apiUrl, truckTitle);  // Capture the screenshot now
         }
     }, 500); // Check every 500 ms until the truck details are loaded (you can adjust this interval if necessary)
 });
