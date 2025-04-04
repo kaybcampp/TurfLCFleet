@@ -708,13 +708,19 @@ window.onload = function () {
         }
     });
 
-    // ✅ Export PDF Button Logic with Data Loading Check
+    // ✅ Export PDF Button Logic with URL and Content Check
 document.getElementById("exportPDF").addEventListener("click", async function () {
     const customerKey = "ac9506";  // Make sure your API key is valid and works for the live site
     const truckTitle = document.getElementById("truckTitle").textContent.trim().replace(/\s+/g, "_") || "Truck_Log";
 
-    // Capture the current live URL of the page
+    // Capture the current live URL of the page, but ensure we are on the correct truck details page
     const currentUrl = window.location.href;
+
+    // Validate URL to ensure it contains 'vin' query parameter (indicating a truck log page)
+    if (!currentUrl.includes('test-logs.html') || !currentUrl.includes('vin=')) {
+        console.error("❌ The current page is not a truck details page.");
+        return;
+    }
 
     // Construct API URL for Screenshot Machine
     let apiUrl = `https://api.screenshotmachine.com?key=${customerKey}`
@@ -727,7 +733,7 @@ document.getElementById("exportPDF").addEventListener("click", async function ()
         + `&zoom=100`
         + `&hide=.bottom-buttons`;  // You can customize this part based on elements you want to hide
 
-    // Check if specific truck details are loaded
+    // Wait until truck details are loaded
     function checkIfTruckDetailsLoaded() {
         // Check if the truck title and truck details section are not empty
         const truckTitleLoaded = document.getElementById("truckTitle") && document.getElementById("truckTitle").textContent.trim() !== "";
@@ -736,7 +742,7 @@ document.getElementById("exportPDF").addEventListener("click", async function ()
         return truckTitleLoaded && truckDetailsLoaded;
     }
 
-    // Wait until the truck details are loaded before taking the screenshot
+    // Check if the truck details are loaded before taking the screenshot
     const checkInterval = setInterval(() => {
         if (checkIfTruckDetailsLoaded()) {
             clearInterval(checkInterval);  // Stop checking once the truck details are loaded
