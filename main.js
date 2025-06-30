@@ -294,8 +294,18 @@ async function saveEdits() {
         document.getElementById("truckStatus").textContent = truckDetails.status;
         document.getElementById("truckStatus").className = `status ${truckDetails.status === 'In Operation' ? 'in-operation' : 'out-of-service'}`;
 
-        // Step 4: Reload truck log to reflect the changes (reload entire truck log after saving)
-        await loadTruckLog();
+        // Step 4: Re-fetch the latest truck data from Supabase and refresh the UI
+        const { data: refreshed, error: fetchError } = await supabase
+            .from('truck_edits')
+            .select('*')
+            .eq('vin', vin)
+            .single();
+
+        if (fetchError) {
+            console.error("❌ Error fetching updated truck data:", fetchError.message);
+        } else {
+            displayTruckData(refreshed); // This will re-render the details, including the correct status
+        }
 
     } catch (error) {
         console.error("❌ Error saving truck details:", error);
