@@ -756,6 +756,7 @@ window.onload = function () {
     window.addEntry = addEntry;
     window.openEditForm = openEditForm;
     window.closeEditForm = closeEditForm;
+    window.saveEdits = saveEdits;
     // Assign it to the global window object to ensure accessibility
     window.previewSelectedFile = previewSelectedFile;
 };
